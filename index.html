@@ -2,140 +2,291 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f7f4ee">
 <title>발명 주사위</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&display=swap">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.min.css" media="print" onload="this.media='all'">
+<!-- 안내판 글자판 전용 서체 (판 안에서만 쓴다) -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@700&display=swap" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.min.css"></noscript>
 <style>
 :root{
-  --bg:#0e0e0d; --housing:#191917; --rim:#2a2a27; --tile:#232321; --tile2:#1c1c1a;
-  --cream:#f1ebdc; --dim:#8a857a; --mute:#55524b; --yellow:#f6c026;
-  --tw:72px; --gap:6px;
+  /* 벽은 맑은 따뜻한 흰색, 안내판은 흰 스플릿 플랩 보드(아이보리 함 + 오프화이트 칸 + 먹색 글자) */
+  --paper:#f7f4ee; --ink:#1c1a15; --ink2:#4a463c; --ink3:#676255; --line:rgba(60,50,30,.16);
+  --housing:#fcfaf5; --groove:#e3ded2; --hinge:#cbc4b3;
+  --label:#6a6354; --amber:#7a5800; --yellow:#f6c026;
+  --R:calc(var(--qf)*1.28*2 + clamp(10px,1.6vh,18px) + var(--mf)*1.5*2);
+  --flap:"IBM Plex Sans KR",Pretendard,"Malgun Gothic",sans-serif;
+  --tw:40px; --gap:6px;
+  --qf:clamp(22px, min(3.9vw, 5.6vh), 64px);
+  --mf:clamp(14px, min(1.4vw, 2.4vh), 28px);
 }
 *{box-sizing:border-box}
-html,body{margin:0;height:100%}
-body{background:var(--bg);color:var(--cream);font-family:Pretendard,"Malgun Gothic",system-ui,sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+html,body{margin:0}
+body{background:var(--paper);color:var(--ink);font-family:Pretendard,"Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden}
 button{font:inherit;color:inherit}
-.mono{font-family:"JetBrains Mono",ui-monospace,monospace;letter-spacing:.14em;text-transform:uppercase}
-.app{max-width:1240px;margin:0 auto;min-height:100%;padding:clamp(16px,2.6vh,32px) 16px;display:flex;flex-direction:column;gap:clamp(14px,2.6vh,30px)}
+kbd{font:700 .78em ui-monospace,Consolas,monospace}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+.nw{white-space:nowrap}
 
-/* 머리 */
-header{display:flex;align-items:flex-end;gap:16px 24px;flex-wrap:wrap;border-bottom:1px solid var(--rim);padding-bottom:clamp(12px,2vh,20px)}
-.title{margin-right:auto}
-.title small{display:block;font-size:12px;color:var(--yellow);margin-bottom:6px}
-h1{margin:0;font-size:clamp(28px,3.4vw,42px);font-weight:800;letter-spacing:-.04em;line-height:1}
-.tabs{display:flex;gap:4px}
-.tabs button{border:0;background:none;cursor:pointer;padding:10px 4px 8px;margin:0 8px;font-size:clamp(16px,1.6vw,19px);font-weight:700;color:var(--mute);
-  border-bottom:3px solid transparent;transition:color .2s,border-color .2s}
-.tabs button[aria-pressed="true"]{color:var(--cream);border-color:var(--yellow)}
-.tabs button:disabled{cursor:default}
-.tools{display:flex;gap:6px}
-.ib{width:42px;height:42px;border:1px solid var(--rim);border-radius:8px;background:none;color:var(--dim);cursor:pointer;display:grid;place-items:center}
-.ib:hover{color:var(--cream);border-color:var(--mute)}
+.app{max-width:1240px;margin:0 auto;min-height:100vh;min-height:100dvh;
+  padding:clamp(12px,2.2vh,28px) 16px clamp(10px,1.6vh,20px);
+  display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr) auto auto auto;gap:clamp(10px,2vh,24px)}
+@media (min-width:1600px){ .app{max-width:1500px} }
+
+/* 머리: 제목 · 주제 · 도구 */
+[hidden]{display:none!important}
+header{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px 20px;width:100%;max-width:100%;margin-inline:auto}
+h1{margin:0;font-size:clamp(21px,1.9vw,32px);font-weight:800;letter-spacing:-.04em;line-height:1;white-space:nowrap;display:flex;align-items:center;gap:.4em}
+/* 굴리기 버튼과 같은 노랑 주사위에 먹색 눈 셋 (주사위 3) */
+h1 .mark{width:1.05em;height:1.05em;flex:none;display:block}
+.topic{display:flex;align-items:center;gap:12px}
+.cap,.topic::after{font-size:13px;font-weight:600;color:var(--ink3);letter-spacing:.14em}
+/* 오른쪽에 같은 폭의 빈 자리를 두어 세그먼트 중심을 판 중심에 맞춘다 */
+.topic::after{content:"주제";visibility:hidden}
+.seg{display:flex;background:rgba(70,58,35,.055);border:1px solid var(--line);border-radius:9px;padding:4px;gap:2px;transition:opacity .2s}
+.seg button{border:0;background:none;cursor:pointer;min-height:44px;padding:0 clamp(14px,1.4vw,22px);border-radius:5px;
+  font-size:clamp(15px,1.15vw,18px);font-weight:700;color:var(--ink2);white-space:nowrap;transition:background .2s,color .2s,opacity .2s;
+  display:flex;align-items:center;justify-content:center;gap:.5em}
+.seg button::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.25;flex:none;transition:background .2s,opacity .2s,box-shadow .2s}
+/* 고른 주제: 판과 같은 아이보리 칸이 살짝 솟아오른 모양 */
+.seg button[aria-pressed="true"]{background:#fffefb;color:var(--ink);
+  box-shadow:0 0 0 1px rgba(80,66,40,.16),0 1px 0 rgba(80,66,40,.12),0 4px 10px -6px rgba(80,62,30,.45),inset 0 1px 0 #fff}
+.seg button[aria-pressed="true"]::before{background:var(--yellow);opacity:1;width:8px;height:8px;box-shadow:0 0 0 1px rgba(140,100,0,.35),0 0 8px rgba(246,192,38,.8)}
+.tools{display:flex;gap:6px;justify-self:end}
+.ib{width:44px;height:44px;border:1px solid var(--line);border-radius:8px;background:none;color:var(--ink2);cursor:pointer;display:grid;place-items:center}
 .ib svg{width:19px;height:19px}
 
-/* 안내판 */
-.board{background:var(--housing);border:1px solid var(--rim);border-radius:14px;padding:clamp(16px,3vh,34px) clamp(14px,3vw,40px);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.04),0 30px 80px rgba(0,0,0,.6);position:relative}
-.board::before,.board::after{content:"";position:absolute;width:7px;height:7px;border-radius:50%;background:#2e2e2b;box-shadow:inset 0 1px 1px rgba(0,0,0,.8);top:12px}
-.board::before{left:12px}.board::after{right:12px}
-.row + .row{margin-top:clamp(14px,2.8vh,30px)}
-.row-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:10px}
-.row-label{display:flex;align-items:baseline;gap:12px;font-weight:700;font-size:clamp(15px,1.5vw,18px)}
-.row-label .mono{font-size:11px;color:var(--dim)}
-.row-label b{color:var(--yellow);font-weight:700}
-.again{border:1px solid var(--rim);background:none;border-radius:6px;padding:7px 12px;font-size:14px;font-weight:600;color:var(--dim);cursor:pointer;display:flex;align-items:center;gap:6px}
-.again svg{width:14px;height:14px}
-.again:hover:not(:disabled){color:var(--cream);border-color:var(--mute)}
-.again:disabled{opacity:.3;cursor:default}
-.tiles{display:flex;justify-content:center;gap:var(--gap)}
-.t{position:relative;width:var(--tw);height:calc(var(--tw)*1.32);perspective:calc(var(--tw)*6);flex:none}
-.h,.f{position:absolute;left:0;right:0;height:50%;overflow:hidden;background:var(--tile)}
-.h.up,.f.fu{top:0;border-radius:6px 6px 0 0;background:linear-gradient(var(--tile),#262624)}
-.h.dn,.f.fd{bottom:0;border-radius:0 0 6px 6px;background:linear-gradient(#1f1f1d,var(--tile2))}
-.h span,.f span{position:absolute;left:0;right:0;height:200%;display:flex;align-items:center;justify-content:center;
-  font-weight:800;font-size:calc(var(--tw)*.66);letter-spacing:-.02em;color:var(--cream)}
-.h.up span,.f.fu span{top:0}
-.h.dn span,.f.fd span{top:-100%}
-.f.fu{transform-origin:bottom;z-index:3;backface-visibility:hidden}
-.f.fd{transform-origin:top;z-index:3;transform:rotateX(90deg);backface-visibility:hidden}
-.t::after{content:"";position:absolute;left:0;right:0;top:50%;height:2px;margin-top:-1px;background:#0b0b0a;z-index:5}
-.t::before{content:"";position:absolute;inset:0;border-radius:6px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.5),0 2px 0 rgba(0,0,0,.6);z-index:6;pointer-events:none}
-.t.flip .fu{animation:fu var(--fd,70ms) ease-in forwards}
-.t.flip .fd{animation:fd var(--fd,70ms) ease-out var(--fd,70ms) forwards}
+/* 안내판: 벽에 걸린 흰 분체도장 함 (Vestaboard White처럼 아이보리 함 + 오프화이트 칸) */
+.stage{min-height:0;display:flex;flex-direction:column;justify-content:center}
+.board{position:relative;width:fit-content;max-width:100%;margin-inline:auto;color:var(--ink);
+  --bz:clamp(4px,.45vw,8px);
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .3 0 0 0 0 .24 0 0 0 0 .12 0 0 0 1 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.05'/%3E%3C/svg%3E"),
+    linear-gradient(#fefdf9,#f7f4ec);
+  border-radius:10px;
+  padding:clamp(14px,2vh,26px) clamp(16px,1.5vw,28px) clamp(14px,2.2vh,28px);
+  display:flex;flex-direction:column;gap:0;
+  box-shadow:
+    inset 0 0 0 var(--bz) #fffefb,
+    inset 0 0 0 calc(var(--bz) + 1px) rgba(120,104,72,.13),
+    inset 0 1px 0 #fff,
+    inset 0 -2px 0 rgba(120,104,72,.08),
+    0 0 0 1px rgba(90,76,50,.16),
+    0 2px 0 rgba(150,134,104,.28),
+    0 3px 0 1px rgba(90,76,50,.06),
+    0 24px 44px -24px rgba(90,70,35,.42),
+    0 50px 90px -50px rgba(90,70,35,.28)}
+/* 상태등: 굴리기가 끝나면 켜진다 */
+.lamp{position:absolute;top:calc(var(--bz) + 7px);right:calc(var(--bz) + 9px);width:7px;height:7px;border-radius:50%;
+  background:#e4dfd3;box-shadow:inset 0 1px 1px rgba(80,66,40,.35),0 1px 0 #fff;transition:background .25s,box-shadow .25s}
+.board.lit .lamp{background:var(--yellow);box-shadow:0 0 0 1px rgba(140,100,0,.3),0 0 0 3px rgba(246,192,38,.18),0 0 10px 2px rgba(246,192,38,.6)}
+.board.lit .lamp{animation:pop .45s ease-out}
+@keyframes pop{0%{transform:scale(.4)}60%{transform:scale(1.5)}100%{transform:scale(1)}}
+
+.row{display:flex;flex-direction:column;align-items:flex-start;gap:clamp(5px,.9vh,10px)}
+.row.obj{padding-bottom:clamp(10px,1.8vh,22px);border-bottom:1px solid rgba(110,95,65,.17);box-shadow:0 1px 0 #fff}
+.row.tech{padding-top:clamp(10px,1.8vh,22px)}
+/* 열 제목: 칸 위에 작게 */
+.row-label{font-size:clamp(14px,calc(var(--tw)*.22),22px);font-weight:700;letter-spacing:.02em;color:var(--label);line-height:1;white-space:nowrap;
+  padding-left:2px;transition:opacity .4s;display:flex;align-items:center;gap:.45em}
+.tech .row-label{color:var(--amber)}
+.tech .row-label::before{content:"";width:.5em;height:.5em;border-radius:2px;background:var(--yellow);box-shadow:0 0 0 1px rgba(140,100,0,.35)}
+/* 아직 뽑지 않았을 때는 열 제목을 숨긴다 (첫 화면의 '발명 주사위'가 물건·기법으로 읽히지 않게) */
+.board:not(.has) .row-label{opacity:0}
+
+/* 플랩 타일: 홈(groove) 안에 박힌 칸 */
+.tiles{display:flex;gap:var(--gap);padding:max(4px,calc(var(--tw)*.07));background:var(--groove);border-radius:7px;
+  box-shadow:inset 0 1px 3px rgba(70,56,30,.24),inset 0 0 0 1px rgba(90,76,50,.08),0 1px 0 #fff}
+.t{position:relative;width:var(--tw);height:calc(var(--tw)*1.32);perspective:calc(var(--tw)*5);flex:none;
+  background:var(--hinge);border-radius:4px;overflow:hidden;
+  box-shadow:0 1px 1px rgba(70,56,30,.22),0 2px 4px -2px rgba(70,56,30,.25)}
+/* 경첩선 1px: 위 반쪽 아래 끝의 inset 그림자로 긋는다. 그림자는 글자 밑에 그려지므로 'ㅣ' 같은 획이 끊기지 않는다 */
+.h,.f{position:absolute;left:0;right:0;height:50%;overflow:hidden}
+.h.up,.f.fu{top:0;border-radius:4px 4px 0 0;background:linear-gradient(#ffffff,#f8f6f0);box-shadow:inset 0 1px 0 #fff,inset 0 -1px 0 rgba(90,76,50,.26)}
+.h.dn,.f.fd{bottom:0;border-radius:0 0 4px 4px;background:linear-gradient(#f4f1ea,#faf8f3);box-shadow:inset 0 3px 4px -3px rgba(70,56,30,.14)}
+/* 기법 줄: 노랑 플랩 + 먹색 글자 (대비 약 11:1) */
+.tech .t:not(.blank) .h.up,.tech .t:not(.blank) .f.fu{background:linear-gradient(#f9cc3e,#f4c024);box-shadow:inset 0 1px 0 rgba(255,255,255,.55),inset 0 -1px 0 rgba(120,82,0,.38)}
+.tech .t:not(.blank) .h.dn,.tech .t:not(.blank) .f.fd{background:linear-gradient(#edb81f,#f2be27);box-shadow:inset 0 3px 4px -3px rgba(110,74,0,.28)}
+.tech .t:not(.blank){background:#c99a12}
+/* 빈 칸: 한 단계 가라앉은 면, 하이라이트 없음 */
+.t.blank{background:#d6d0c2;box-shadow:inset 0 0 0 1px rgba(90,76,50,.05)}
+.t.blank .h.up,.t.blank .f.fu{background:#ece8de;box-shadow:inset 0 -1px 0 rgba(90,76,50,.16)}
+.t.blank .h.dn,.t.blank .f.fd{background:#e9e5da;box-shadow:inset 0 2px 3px -2px rgba(70,56,30,.12)}
+.t.blank::before,.t.blank::after{opacity:.45}
+.h span,.f span{position:absolute;left:0;right:0;height:calc(var(--tw)*1.32);display:flex;align-items:center;justify-content:center;
+  font-family:var(--flap);font-weight:700;font-size:calc(var(--tw)*.62);letter-spacing:-.02em;color:var(--ink);line-height:1}
+.t.punct span{font-weight:500;font-size:calc(var(--tw)*.46);opacity:.7}
+.up span,.fu span{top:0}
+.dn span,.fd span{bottom:0}
+.f.fu{transform-origin:50% 100%;z-index:3;backface-visibility:hidden}
+.f.fd{transform-origin:50% 0;z-index:3;transform:rotateX(90deg);backface-visibility:hidden}
+.f::after{content:"";position:absolute;inset:0;background:#3b2f17;opacity:0;pointer-events:none}
+/* 축 핀: 칸 가장자리에 아주 작게 (글자 획을 덮지 않게) */
+.t::before,.t::after{content:"";position:absolute;top:calc(50% - max(3px,var(--tw)*.045));width:max(2px,calc(var(--tw)*.028));height:max(6px,calc(var(--tw)*.09));background:#a99f8a;z-index:6;border-radius:1px}
+.t::before{left:0}.t::after{right:0}
+.t.flip .fu{animation:fu var(--fd,60ms) ease-in forwards}
+.t.flip .fu::after{animation:shadeIn var(--fd,60ms) ease-in forwards}
+.t.flip .fd{animation:fd var(--fd,60ms) ease-out var(--fd,60ms) forwards}
+.t.flip .fd::after{animation:shadeOut var(--fd,60ms) ease-out var(--fd,60ms) both}
+.t.flip.land .fd{animation-timing-function:cubic-bezier(.3,1.45,.55,1)}
 @keyframes fu{to{transform:rotateX(-90deg)}}
 @keyframes fd{from{transform:rotateX(90deg)}to{transform:rotateX(0)}}
-.tech .h span,.tech .f span{color:var(--yellow)}
+@keyframes shadeIn{to{opacity:.28}}
+@keyframes shadeOut{from{opacity:.28}to{opacity:0}}
 .t.blank .h span,.t.blank .f span{color:transparent}
+.t.swap{animation:swap .18s ease-out}
+@keyframes swap{from{opacity:.35}to{opacity:1}}
 
 /* 결과 */
-.result{min-height:clamp(140px,21vh,230px);display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;gap:clamp(12px,1.8vh,20px);padding:0 8px}
-.idle{margin:0;color:var(--dim);font-size:clamp(17px,2vw,24px);font-weight:600;word-break:keep-all;line-height:1.6}
-.idle kbd{font:700 .8em "JetBrains Mono",monospace;border:1px solid var(--mute);border-bottom-width:3px;border-radius:6px;padding:1px 9px;color:var(--cream)}
-.question{margin:0;font-size:clamp(26px,3.7vw,50px);font-weight:800;letter-spacing:-.04em;line-height:1.28;word-break:keep-all;max-width:22em}
-.question em{font-style:normal;color:var(--cream);background:linear-gradient(transparent 62%,rgba(246,192,38,.45) 62%)}
-.meta{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:8px 22px;color:var(--dim);font-size:clamp(15px,1.6vw,19px);word-break:keep-all}
-.meta .k{display:inline-flex;align-items:center;gap:8px;color:var(--yellow);font-weight:700}
-.meta .k svg{width:18px;height:18px}
-.meta .sep{width:4px;height:4px;border-radius:50%;background:var(--mute)}
-.show-in{animation:in .5s cubic-bezier(.2,.9,.3,1) both}
+.result{min-height:var(--R);transition:min-height .45s cubic-bezier(.3,.7,.3,1);
+  display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;gap:clamp(10px,1.6vh,18px);padding:0 8px}
+.result > *{transition:opacity .2s}
+/* 굴리는 동안: 이전 질문은 흐리게, 안내 문구는 완전히 숨긴다 */
+.result.wait > *{opacity:.22}
+.result.wait > .idle{opacity:0}
+.rprobe{position:absolute;top:0;left:0;width:0;height:var(--R);visibility:hidden;pointer-events:none}
+.idle{margin:0;color:var(--ink2);font-size:clamp(16px, min(1.8vw,2.8vh), 26px);font-weight:600;word-break:keep-all;line-height:1.6}
+.idle kbd{border:1px solid rgba(60,50,30,.3);border-bottom-width:3px;border-radius:5px;padding:1px 9px;color:var(--ink);background:#fffefb}
+.question{margin:0;font-size:var(--qf);font-weight:800;letter-spacing:-.035em;line-height:1.28;word-break:keep-all;max-width:22em}
+/* 종이 위 형광펜: 글자 아래 절반에 맞춰 칠하고, 끝나는 순간 왼쪽에서 오른쪽으로 그어진다 */
+.question em{font-style:normal;color:var(--ink);padding:0 .06em;margin:0 -.06em;border-radius:.06em;
+  background:linear-gradient(transparent 52%,var(--yellow) 52%,var(--yellow) 86%,transparent 86%) left/100% 100% no-repeat;
+  -webkit-box-decoration-break:clone;box-decoration-break:clone}
+.question.show-in em{animation:paint .42s cubic-bezier(.3,.7,.3,1) .22s both}
+@keyframes paint{from{background-size:0% 100%}to{background-size:100% 100%}}
+.meta{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;column-gap:16px;row-gap:4px;color:var(--ink2);font-size:var(--mf);line-height:1.5;word-break:keep-all}
+.meta .k{display:inline-flex;align-items:center;gap:.45em;color:var(--ink);font-weight:700}
+.meta .k svg{width:1.25em;height:1.25em;padding:.2em;border-radius:.2em;background:var(--yellow);color:var(--ink);box-shadow:0 0 0 1px rgba(140,100,0,.3);box-sizing:border-box}
+.meta .mean{border-left:1px solid var(--line);padding-left:16px;color:var(--ink2)}
+.meta .ex{flex-basis:100%}
+/* 끝난 모양(opacity 1)은 원래 값과 같으니 backwards만 쓴다. 'both'면 굴리는 중 .wait의 흐림을 이겨 버린다 */
+.show-in{animation:in .5s cubic-bezier(.2,.9,.3,1) backwards}
 @keyframes in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 
-/* 버튼 */
-.go{align-self:center;width:min(520px,100%);cursor:pointer;border:0;border-radius:10px;padding:clamp(17px,2.4vh,24px) 24px;
-  background:var(--cream);color:#151513;font-size:clamp(21px,2.5vw,28px);font-weight:800;letter-spacing:-.03em;
-  box-shadow:0 7px 0 #a39c8b,0 16px 30px rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;gap:14px;transition:transform .07s,box-shadow .07s}
-.go:active:not(:disabled),.go.pressed{transform:translateY(6px);box-shadow:0 1px 0 #a39c8b,0 6px 14px rgba(0,0,0,.5)}
-.go:disabled{opacity:.55;cursor:default}
-.go kbd{font:700 12px "JetBrains Mono",monospace;letter-spacing:.1em;border:1.5px solid #8b8576;color:#5d584d;border-radius:5px;padding:3px 7px}
-footer{margin-top:auto;display:flex;justify-content:space-between;gap:6px 20px;flex-wrap:wrap;color:var(--mute);font-size:12.5px;word-break:keep-all;border-top:1px solid var(--rim);padding-top:14px}
-
-@media (pointer:coarse){ .keys,.go kbd{display:none} .again{padding:10px 14px;font-size:15px} .ib{width:48px;height:48px} }
-@media (max-width:640px){
-  header{align-items:flex-start}
-  .tabs{width:100%;order:3} .tabs button{flex:1;margin:0}
-  footer{justify-content:center;text-align:center}
+/* 굴리기 줄: 가운데 굴리기, 양옆에 하나만 다시 */
+.actions{transition:margin-bottom .45s cubic-bezier(.3,.7,.3,1);margin-top:clamp(2px,1vh,14px);display:grid;grid-template-columns:1fr minmax(0,520px) 1fr;align-items:center;column-gap:clamp(10px,2vw,32px);row-gap:6px}
+.go{grid-column:2;width:100%;cursor:pointer;border:0;border-radius:6px;padding:clamp(14px,2.2vh,24px) 24px;
+  background:var(--yellow);color:var(--ink);font-size:clamp(20px, min(2.4vw,3.4vh), 30px);font-weight:700;letter-spacing:-.02em;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 3px 0 #b8890c,0 10px 18px -12px rgba(60,40,0,.45);transition:transform .07s,box-shadow .07s,background .2s;margin-bottom:3px}
+.go:active:not([aria-disabled="true"]),.go.pressed{transform:translateY(2px);box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 1px 0 #b8890c,0 4px 8px -6px rgba(60,40,0,.4)}
+.go[aria-disabled="true"]{cursor:default;background:#ebcb6b;color:#3a3220;transform:translateY(2px);box-shadow:0 1px 0 #b8890c}
+.go:focus-visible{outline-color:var(--ink);outline-offset:4px}
+.again{min-height:44px;border:0;background:none;padding:0 6px;font-size:clamp(15px,1.15vw,19px);font-weight:700;color:var(--ink2);
+  cursor:pointer;display:flex;align-items:center;gap:.45em;white-space:nowrap;transition:opacity .25s,color .15s;text-underline-offset:.28em;text-decoration-thickness:2px}
+#againObj{grid-column:1;grid-row:1;justify-self:end}
+#againTech{grid-column:3;grid-row:1;justify-self:start}
+.again svg{width:1em;height:1em;flex:none}
+.again kbd{border:1px solid rgba(60,50,30,.28);border-bottom-width:2px;border-radius:4px;padding:0 5px;color:var(--ink3);font-size:.72em;margin-left:.15em}
+.actions:not(.has) .again{visibility:hidden;opacity:0}
+.again[aria-disabled="true"]{cursor:default}
+.actions.has .again[aria-disabled="true"]{opacity:.38}
+.again:active:not([aria-disabled="true"]){color:var(--ink)}
+@media (hover:hover){
+  .ib:hover{color:var(--ink);border-color:rgba(23,21,16,.4)}
+  .again:hover:not([aria-disabled="true"]){color:var(--ink);text-decoration-line:underline}
+  .seg button[aria-pressed="false"]:not([aria-disabled="true"]):hover{color:var(--ink);background:rgba(23,21,16,.06)}
 }
-@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+.seg button[aria-disabled="true"]{cursor:default}
+.seg button[aria-disabled="true"]{opacity:.45}
+.seg button[aria-pressed="true"][aria-disabled="true"]{opacity:.6}
+
+/* 바닥글도 판과 같은 가운데 축에 */
+footer{display:flex;justify-content:center;gap:4px 28px;flex-wrap:wrap;text-align:center;color:var(--ink3);font-size:13px;line-height:1.5;word-break:keep-all;
+  padding-top:10px;background:linear-gradient(var(--line),var(--line)) center top/40px 1px no-repeat}
+@media (min-width:1600px){
+  footer{font-size:15px}
+  h1{font-size:32px} .cap,.topic::after{font-size:15px}
+  .seg button{font-size:21px;min-height:52px} .ib{width:52px;height:52px} .ib svg{width:22px;height:22px}
+  .again{min-height:52px}
+}
+
+@media (pointer:coarse){ .keys,.again kbd{display:none} .ib{width:48px;height:48px} }
+@media (max-height:820px){ footer .tag{display:none} }
+@media (max-height:560px){
+  .app{gap:8px;padding-top:8px;padding-bottom:8px}
+  :root{--qf:clamp(17px,5vh,30px);--mf:13px}
+  .board{padding:10px 14px}
+  .go{padding:10px 20px;font-size:19px} .seg button,.again,.ib{min-height:38px} .ib{width:38px;height:38px}
+  footer{font-size:11px;padding-top:6px}
+}
+@media (max-width:640px){
+  .app{padding-left:12px;padding-right:12px;grid-template-rows:auto auto auto auto 1fr}
+  footer{align-self:end}
+  header{grid-template-columns:1fr auto;grid-template-areas:"t tools" "topic topic"}
+  h1{grid-area:t} .tools{grid-area:tools} .topic{grid-area:topic}
+  .topic .cap,.topic::after{display:none} .seg{flex:1} .seg button{flex:1}
+  .stage{justify-content:flex-start}
+  .board{padding:12px 10px 14px}
+  .meta{flex-direction:column;flex-wrap:nowrap;gap:2px}
+  .meta .mean{border:0;padding:0}
+  .meta .ex{flex-basis:auto}
+  :root{--R:calc(var(--qf)*1.28*3 + 10px + var(--mf)*1.5*3)}
+  .actions{grid-template-columns:1fr 1fr}
+  .go{grid-column:1/-1;grid-row:1}
+  #againObj{grid-column:1;grid-row:2;justify-self:center}
+  #againTech{grid-column:2;grid-row:2;justify-self:center}
+  footer{justify-content:center;text-align:center;font-size:12px;background-position:center top}
+  footer .tag{display:none}
+}
+@media (prefers-reduced-motion:reduce){
+  .t.flip .fu,.t.flip .fd,.t.flip .fu::after,.t.flip .fd::after{animation:none!important}
+  .show-in{animation:swap .25s ease-out backwards}
+  .question.show-in em,.board.lit .lamp{animation:none}
+  .go,.result > *,.result,.actions{transition:none}
+}
 </style>
 </head>
 <body>
-<div class="app">
+<div class="app" id="app">
   <header>
-    <div class="title"><small class="mono">Invention Dice</small><h1>발명 주사위</h1></div>
-    <nav class="tabs" aria-label="물건 주제">
-      <button data-topic="pet" aria-pressed="true">애완동물 물품</button>
-      <button data-topic="school" aria-pressed="false">학교 물건</button>
-    </nav>
+    <h1><svg class="mark" viewBox="0 0 20 20" aria-hidden="true"><rect x=".6" y=".6" width="18.8" height="18.8" rx="4" fill="#f6c026" stroke="#a87c06" stroke-width="1.2"/><circle cx="5.8" cy="5.8" r="1.75" fill="#1c1a15"/><circle cx="10" cy="10" r="1.75" fill="#1c1a15"/><circle cx="14.2" cy="14.2" r="1.75" fill="#1c1a15"/></svg>발명 주사위</h1>
+    <div class="topic">
+      <span class="cap" id="topicLabel">주제</span>
+      <div class="seg" role="group" aria-labelledby="topicLabel">
+        <button data-topic="pet" aria-pressed="true">애완동물 물품</button>
+        <button data-topic="school" aria-pressed="false">학교 물건</button>
+      </div>
+    </div>
     <div class="tools">
       <button class="ib" id="sound" title="소리 (M)"></button>
       <button class="ib" id="full" aria-label="전체 화면" title="전체 화면 (F)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
     </div>
   </header>
 
-  <section class="board" aria-label="뽑기 결과판">
-    <div class="row obj">
-      <div class="row-head"><span class="row-label"><span class="mono">01</span><b>물건</b></span>
-        <button class="again" id="againObj" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 1-2.3-5.7M20 4v5h-5"/></svg>물건만 다시</button></div>
-      <div class="tiles" id="rowObj"></div>
-    </div>
-    <div class="row tech">
-      <div class="row-head"><span class="row-label"><span class="mono">02</span><b>발명 기법</b></span>
-        <button class="again" id="againTech" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 1-2.3-5.7M20 4v5h-5"/></svg>기법만 다시</button></div>
-      <div class="tiles" id="rowTech"></div>
-    </div>
-  </section>
+  <div class="stage" id="stage">
+    <section class="board" id="board" aria-label="뽑기 결과판">
+      <span class="lamp" aria-hidden="true"></span>
+      <div class="row obj">
+        <span class="row-label" aria-hidden="true">물건</span>
+        <div class="tiles" id="rowObj" aria-hidden="true"></div>
+        <span class="sr-only" id="objSr"></span>
+      </div>
+      <div class="row tech">
+        <span class="row-label" aria-hidden="true">발명 기법</span>
+        <div class="tiles" id="rowTech" aria-hidden="true"></div>
+        <span class="sr-only" id="techSr"></span>
+      </div>
+    </section>
+  </div>
 
-  <section class="result" id="result" aria-live="polite">
+  <div class="rprobe" id="rprobe" aria-hidden="true"></div>
+  <section class="result" id="result" aria-live="polite" aria-busy="false">
     <p class="idle">주제를 고르고 버튼을 눌러 보세요.<span class="keys"><br><kbd>SPACE</kbd> 키로도 굴릴 수 있어요.</span></p>
   </section>
 
-  <button class="go" id="go"><span id="goText">주사위 굴리기</span><kbd>SPACE</kbd></button>
+  <div class="actions">
+    <button class="again" id="againObj" aria-disabled="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.3-5.7M20 4v5h-5"/></svg>물건만 다시<kbd aria-hidden="true">1</kbd></button>
+    <button class="go" id="go"><span id="goText">주사위 굴리기</span></button>
+    <button class="again" id="againTech" aria-disabled="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.3-5.7M20 4v5h-5"/></svg>기법만 다시<kbd aria-hidden="true">2</kbd></button>
+  </div>
 
   <footer>
-    <span>아이디어를 대신 내 주는 도구가 아니라, 생각의 출발점을 던져 주는 도구</span>
-    <span>발명 기법 출처 · 인천광역시교육청(2024) 「차근차근 배우는 발명이야기」 발명 10계명</span>
+    <span class="tag">아이디어를 대신 내 주는 도구가 아니라, 생각의 출발점을 던져 주는 도구</span>
+    <span>발명 기법 출처 · 인천광역시교육청(2024) <span class="nw">「차근차근 배우는 발명이야기」 발명 10계명</span></span>
   </footer>
 </div>
 
@@ -144,7 +295,7 @@ const ITEMS = {
   pet: ["신발","이동식 가방","목줄","물통(정수기)","밥그릇","장난감","방석","빗","옷","배변패드","집","발톱깎이"],
   school: ["필통","의자","책상","가방","실내화","우산","물병","지우개","자","칠판지우개","연필깎이","사물함"]
 };
-const svg = d => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">' + d + '</svg>';
+const svg = d => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + d + '</svg>';
 const TECHS = [
   {name:"더하기", mean:"두 가지 물건이나 기능을 합친다", ex:"연필 + 지우개 → 지우개 달린 연필",
    q:x=>`<em>${x}</em>에 무엇을 더하면<br>새 물건이 될까?`, icon:svg('<path d="M12 5v14M5 12h14"/>')},
@@ -168,8 +319,9 @@ const rnd = a => a[Math.floor(Math.random()*a.length)];
 const pickNot = (a, prev) => { let v; do v = rnd(a); while (a.length > 1 && v === prev); return v; };
 const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const POOL = [...new Set([...ITEMS.pet, ...ITEMS.school, ...TECHS.map(t=>t.name)].join("").replace(/[\s()]/g,""))];
+const isPunct = c => c === "(" || c === ")";
 
-/* 소리: 짧은 잡음으로 기계식 딸깍 */
+/* 소리: 짧은 잡음으로 기계식 딸깍. 터치 기기는 기본 꺼짐 */
 let soundOn = !matchMedia("(pointer:coarse)").matches, ac = null, noise = null, lastClick = 0;
 function ctx(){
   if (!ac){
@@ -217,99 +369,167 @@ function makeRow(el){
   }
 }
 function put(t, c){
-  const [up, dn, fu, fd] = t.querySelectorAll("span");
-  up.textContent = dn.textContent = c; t.c = c;
+  const s = t.querySelectorAll("span");
+  s.forEach(x => x.textContent = c); t.c = c;
+  t.classList.remove("flip", "land");
   t.classList.toggle("blank", c === " ");
+  t.classList.toggle("punct", isPunct(c));
 }
-function flipTo(t, c){
+function flipTo(t, c, dur, land){
   const [up, dn, fu, fd] = t.querySelectorAll("span");
   const old = t.c;
   fu.textContent = old; dn.textContent = old;
   up.textContent = c; fd.textContent = c;
-  t.classList.remove("blank");
-  t.classList.remove("flip"); void t.offsetWidth; t.classList.add("flip");
+  t.style.setProperty("--fd", dur + "ms");
+  t.classList.remove("blank", "flip", "land"); void t.offsetWidth;
+  t.classList.toggle("punct", isPunct(c));
+  t.classList.add("flip"); if (land) t.classList.add("land");
   t.c = c;
   clearTimeout(t.tm);
-  t.tm = setTimeout(() => { dn.textContent = fu.textContent = c; t.classList.remove("flip"); t.classList.toggle("blank", c === " "); }, 150);
+  t.tm = setTimeout(() => { dn.textContent = fu.textContent = c; t.classList.remove("flip", "land"); t.classList.toggle("blank", c === " "); }, dur * 2 + 20);
 }
+/* 7칸 안에서 가운데 정렬. 짝수 글자는 반 칸 남는 것을 언제나 오른쪽에 둔다 (규칙 하나) */
+const padOf = word => Math.max(0, Math.floor((N - [...word].length) / 2));
 function layout(word){
-  const ch = [...word];
-  const pad = Math.floor((N - ch.length) / 2);
-  return Array.from({length:N}, (_, i) => ch[i - pad] ?? " ");
+  const ch = [...word], p = padOf(word);
+  return Array.from({length:N}, (_, i) => ch[i - p] ?? " ");
 }
-function setRow(el, word){ const L = layout(word); [...el.children].forEach((t,i) => put(t, L[i])); }
-function animateRow(el, word, baseSteps, stagger, loud){
+function setRow(el, word){
+  const L = layout(word);
+  [...el.children].forEach((t,i) => {
+    if (t.c !== L[i]){ put(t, L[i]); t.classList.remove("swap"); void t.offsetWidth; t.classList.add("swap"); }
+  });
+}
+/* 왼쪽 칸부터 차례로 '타닥타닥' 멈춘다. 마지막 글자 칸이 멈출 때 가장 크게 딸깍 */
+function animateRow(el, word, baseSteps, stagger, opt = {}){
+  const gen = el.gen = (el.gen || 0) + 1;     /* 새 애니메이션이 오면 이전 것은 멈춘다 */
   const L = layout(word), tiles = [...el.children];
-  if (reduce){ setRow(el, word); return Promise.resolve(); }
+  const lastIdx = padOf(word) + [...word].length - 1;
+  if (reduce){ setRow(el, word); return new Promise(r => setTimeout(r, 220)); }
   return Promise.all(tiles.map((t, i) => new Promise(res => {
     const steps = baseSteps + i * stagger;
     let n = 0;
     const go = () => {
+      if (el.gen !== gen) return res();
       if (n >= steps){
-        if (t.c !== L[i]) { flipTo(t, L[i]); click(loud ? .5 : .35, .8); }
-        return setTimeout(res, 150);
+        if (t.c !== L[i]){
+          flipTo(t, L[i], 105, true);
+          if (!opt.silent) click(i === lastIdx && opt.loud ? .65 : i === lastIdx ? .5 : .32, i === lastIdx ? .7 : .85);
+        }
+        return setTimeout(res, 240);
       }
+      const gapMs = 62 + n * 1.8;
       const c = (L[i] === " " && n > steps - 3) ? " " : rnd(POOL);
-      flipTo(t, c); click(.18 + Math.random()*.1);
-      n++; setTimeout(go, 62 + n * 1.6);
+      flipTo(t, c, Math.round(gapMs * .46));
+      if (!opt.silent) click(.16 + Math.random()*.1);
+      n++; setTimeout(go, gapMs);
     };
-    setTimeout(go, i * 22);
+    setTimeout(go, i * 40);
   })));
 }
 
-/* 크기 */
+/* 크기: 남는 높이와 너비를 실측해서 칸 크기를 정한다 → 어떤 화면에서도 스크롤 없이 한 화면 */
 function size(){
-  const board = document.querySelector(".board");
-  const inner = board.clientWidth - parseFloat(getComputedStyle(board).paddingLeft) * 2;
-  const gap = innerWidth < 640 ? 4 : 8;
-  const byW = (inner - gap * (N-1)) / N;
-  const byH = innerHeight * .135;
-  document.documentElement.style.setProperty("--gap", gap + "px");
-  document.documentElement.style.setProperty("--tw", Math.floor(Math.max(34, Math.min(byW, byH, 130))) + "px");
+  const de = document.documentElement, rs = de.style;
+  const gap = innerWidth < 640 ? 3 : innerWidth < 1200 ? 6 : 9;
+  rs.setProperty("--gap", gap + "px");
+  const app = $("app"), stage = $("stage"), board = $("board"), tiles = $("rowObj");
+  const phone = innerWidth <= 640;
+  const cap = innerWidth >= 1600 ? 140 : 170;
+  /* 판 위아래로 숨 쉴 자리 (판과 질문이 붙지 않게) */
+  const breathe = phone ? 8 : Math.max(20, innerHeight * .04);
+  const cur = () => parseFloat(rs.getPropertyValue("--tw")) || 40;
+  for (let k = 0; k < 6; k++){
+    const bs = getComputedStyle(board), ts = getComputedStyle(tiles);
+    const innerW = stage.clientWidth - parseFloat(bs.paddingLeft) - parseFloat(bs.paddingRight);
+    const tilesPad = parseFloat(ts.paddingLeft) + parseFloat(ts.paddingRight);
+    const byW = (innerW - tilesPad - gap * (N-1)) / N;
+    const other = app.offsetHeight - stage.offsetHeight;
+    const avail = innerHeight - other - 6 - breathe;
+    const tileH = tiles.firstElementChild.offsetHeight;
+    const chrome = board.offsetHeight - tileH * 2;
+    const byH = phone ? Infinity : (avail - chrome) / 2 / 1.32;
+    let tw = Math.floor(Math.max(26, Math.min(byW, byH, cap)));
+    if (tw === cur()){
+      /* 대신 쓰는 폰트 등으로 그래도 넘치면, 넘친 만큼 칸을 줄이고 다시 잰다 */
+      const over = de.scrollHeight - innerHeight;
+      if (!phone && over > 0 && tw > 26){ rs.setProperty("--tw", Math.max(26, tw - Math.ceil(over / 2 / 1.32) - 1) + "px"); continue; }
+      break;
+    }
+    rs.setProperty("--tw", tw + "px");
+  }
+  fitHeader(); fitLower();
+}
+/* 머리 줄 폭을 판 폭에 맞춘다 (내용이 더 넓으면 내용 폭, 가운데 축은 판과 같다) */
+function fitHeader(){
+  const h = document.querySelector("header");
+  if (innerWidth <= 640){ h.style.width = ""; return; }
+  h.style.width = "max-content";
+  const need = h.offsetWidth, bw = $("board").offsetWidth, room = $("stage").clientWidth;
+  h.style.width = Math.min(room, Math.max(bw, need)) + "px";
+}
+/* 첫 화면(결과 없음)에서는 질문 자리를 비워 두지 않고 안내·버튼을 판 밑에 붙인다.
+   대신 그만큼을 버튼 아래로 옮겨 두어 판 크기·위치는 결과가 나와도 그대로다 */
+function fitLower(){
+  const r = $("result"), a = document.querySelector(".actions"), idle = r.querySelector(".idle");
+  const empty = idle && !r.classList.contains("wait");
+  if (!empty){ r.style.minHeight = ""; a.style.marginBottom = ""; return; }
+  const R = $("rprobe").offsetHeight, ih = idle.offsetHeight;
+  r.style.minHeight = ih + "px";
+  a.style.marginBottom = innerWidth <= 640 ? "" : Math.max(0, R - ih) + "px";
 }
 
 /* 상태 */
 let topic = "pet", obj = null, tech = null, busy = false;
+const tabs = [...document.querySelectorAll(".seg button")];
 function setBusy(b){
   busy = b;
-  $("go").disabled = b;
-  $("againObj").disabled = $("againTech").disabled = b || !(obj && tech);
-  document.querySelectorAll(".tabs button").forEach(x => x.disabled = b);
-  $("goText").textContent = (obj && tech) ? "다시 굴리기" : "주사위 굴리기";
+  const has = !!(obj && tech);
+  $("go").setAttribute("aria-disabled", b);
+  ["againObj","againTech"].forEach(id => $(id).setAttribute("aria-disabled", b || !has));
+  document.querySelector(".actions").classList.toggle("has", has);
+  tabs.forEach(x => x.setAttribute("aria-disabled", b));
+  $("goText").textContent = b ? "굴리는 중…" : has ? "다시 굴리기" : "주사위 굴리기";
 }
+function idleHTML(){ return '<p class="idle show-in">주제를 고르고 버튼을 눌러 보세요.<span class="keys"><br><kbd>SPACE</kbd> 키로도 굴릴 수 있어요.</span></p>'; }
 function showResult(){
   const r = $("result");
-  if (!(obj && tech)){
-    r.innerHTML = '<p class="idle show-in">주제를 고르고 버튼을 눌러 보세요.<span class="keys"><br><kbd>SPACE</kbd> 키로도 굴릴 수 있어요.</span></p>';
-    return;
-  }
+  r.classList.remove("wait"); r.setAttribute("aria-busy", "false");
+  if (!(obj && tech)){ r.innerHTML = idleHTML(); fitLower(); return; }
   r.innerHTML = `<p class="question show-in">${tech.q(obj)}</p>
-    <div class="meta show-in" style="animation-delay:.12s"><span class="k">${tech.icon}${tech.name}</span><span>${tech.mean}</span><span class="sep"></span><span>예) ${tech.ex}</span></div>`;
+    <div class="meta show-in" style="animation-delay:.12s"><span class="k">${tech.icon}${tech.name}</span><span class="mean">${tech.mean}</span><span class="ex">예) ${tech.ex}</span></div>`;
+  fitLower();
 }
-function waiting(){ $("result").innerHTML = '<p class="idle mono" style="font-size:13px;letter-spacing:.3em">· · ·</p>'; }
+function waiting(){ const r = $("result"); r.setAttribute("aria-busy", "true"); r.classList.add("wait"); fitLower(); }
+function srRows(){ $("objSr").textContent = obj ? "물건: " + obj : ""; $("techSr").textContent = tech ? "발명 기법: " + tech.name : ""; }
 
 async function roll(doObj, doTech){
   if (busy) return;
-  const nObj = doObj ? pickNot(ITEMS[topic], obj) : obj;
+  if ((!doObj || !doTech) && !(obj && tech)) return;
+  const nObj = doObj ? pickNot(ITEMS[topic], ITEMS[topic].includes(obj) ? obj : null) : obj;
   const nTech = doTech ? pickNot(TECHS, tech) : tech;
   setBusy(true); waiting();
+  $("board").classList.remove("lit");
   const jobs = [];
-  if (doObj) jobs.push(animateRow($("rowObj"), nObj, 9, 2, false));
-  if (doTech) jobs.push(animateRow($("rowTech"), nTech.name, doObj ? 19 : 9, 2, true));
+  /* 판에 다른 글(첫 화면의 '발명 주사위', 주제 이름)이 남아 있으면 같이 넘긴다 */
+  if (doObj || !obj) jobs.push(animateRow($("rowObj"), nObj, 9, 2));
+  if (doTech || !tech) jobs.push(animateRow($("rowTech"), nTech.name, doObj ? 17 : 9, 3, {loud:true}));
   await Promise.all(jobs);
   obj = nObj; tech = nTech;
-  chime();
+  $("board").classList.add("has", "lit");
+  chime(); srRows();
   setBusy(false); showResult();
 }
 
 /* 이벤트 */
-document.querySelectorAll(".tabs button").forEach(b => b.onclick = async () => {
+tabs.forEach(b => b.onclick = () => {
   if (busy || b.dataset.topic === topic) return;
   topic = b.dataset.topic;
-  document.querySelectorAll(".tabs button").forEach(x => x.setAttribute("aria-pressed", x === b));
-  obj = null; setBusy(true);
-  await animateRow($("rowObj"), "", 3, 1, false);
-  setBusy(false); showResult();
+  tabs.forEach(x => x.setAttribute("aria-pressed", x === b));
+  if (obj && tech) return roll(true, false);          /* 결과가 있으면 새 주제로 물건만 다시 */
+  /* 결과가 없으면 판에 주제 이름만 띄운다. 잠그지 않으므로 바로 굴려도 굴리기가 이어받는다 */
+  animateRow($("rowObj"), b.textContent, 4, 1);
+  animateRow($("rowTech"), "", 3, 1, {silent:true});
 });
 $("go").onclick = () => roll(true, true);
 $("againObj").onclick = () => roll(true, false);
@@ -318,20 +538,35 @@ $("sound").onclick = () => { soundOn = !soundOn; setSoundIcon(); if (soundOn) cl
 $("full").onclick = () => document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen?.();
 addEventListener("keydown", e => {
   if (e.repeat || e.altKey || e.ctrlKey || e.metaKey) return;
+  const onControl = e.target.closest && e.target.closest("button,a,input,select,textarea");
   if (e.code === "Space" || e.code === "Enter"){
+    if (onControl) return;                 /* 포커스 받은 버튼은 제 동작대로 (굴리기 버튼도 브라우저 기본 클릭) */
     e.preventDefault();
     if (!busy){ $("go").classList.add("pressed"); setTimeout(() => $("go").classList.remove("pressed"), 110); roll(true, true); }
   }
-  else if (e.key === "1" && obj && tech) roll(true, false);
-  else if (e.key === "2" && obj && tech) roll(false, true);
+  else if (e.key === "1") roll(true, false);
+  else if (e.key === "2") roll(false, true);
   else if (e.key.toLowerCase() === "f") $("full").click();
   else if (e.key.toLowerCase() === "m") $("sound").click();
 });
-let rz; addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(size, 100); });
+/* 마우스로 누른 버튼에 포커스가 남아 Space가 그 버튼으로 가지 않게 */
+addEventListener("pointerup", e => {
+  if (e.pointerType === "mouse") setTimeout(() => { const a = document.activeElement; if (a && a.tagName === "BUTTON") a.blur(); }, 0);
+});
+let rz; addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(size, 80); });
 
+/* 전체 화면을 못 쓰는 기기(아이폰 사파리 등)는 버튼을 숨긴다 */
+if (!document.documentElement.requestFullscreen) $("full").hidden = true;
 makeRow($("rowObj")); makeRow($("rowTech"));
 size(); setSoundIcon(); setBusy(false);
 document.fonts?.ready.then(size);
+if (document.fonts) document.fonts.onloadingdone = () => size();
+/* 켜질 때 판 전체가 한 번 착착 넘어가며 이름을 띄운다 (소리 없이, 열 제목은 숨긴 채) */
+setTimeout(() => {
+  if (obj || busy) return;
+  animateRow($("rowObj"), "발명", 6, 1, {silent:true});
+  animateRow($("rowTech"), "주사위", 10, 1, {silent:true});
+}, 350);
 </script>
 </body>
 </html>
